@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "FreshDash",
+    "slug": "freshdash",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1B7A4E"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.freshdash.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1B7A4E"
+      },
+      "package": "com.freshdash.app"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
