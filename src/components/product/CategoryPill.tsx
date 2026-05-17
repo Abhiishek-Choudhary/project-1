@@ -22,8 +22,8 @@ export const CategoryPill = memo(function CategoryPill({
       style={[
         styles.pill,
         active
-          ? { backgroundColor: colors.primary, borderColor: colors.primary }
-          : { backgroundColor: colors.surface, borderColor: colors.border },
+          ? { backgroundColor: colors.primary }
+          : { backgroundColor: colors.surface },
       ]}
     >
       <Text
@@ -43,7 +43,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.sm + 2,
     borderRadius: BorderRadius.full,
-    borderWidth: 1,
     marginRight: Spacing.sm,
   },
   text: { fontSize: 14, fontWeight: '600' },

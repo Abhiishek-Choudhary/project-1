@@ -11,8 +11,11 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { MOCK_UNSPLASH } from '../../constants/mockImages';
 import { BorderRadius, Shadows, Spacing } from '../../constants/theme';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { SearchBar } from '../../components/ui/SearchBar';
 import { HomeProductCard } from '../../components/product/HomeProductCard';
 import { FloatingCartBar } from '../../components/cart/FloatingCartBar';
 import { Loader } from '../../components/ui/Loader';
@@ -25,16 +28,17 @@ import { formatRating } from '../../utils/format';
 import type { Store, Product } from '../../types';
 import type { UserStackParamList } from '../../types/navigation';
 
-const POPULAR_CATEGORIES = [
-  { id: 'Fruits', label: 'Fruits', icon: 'nutrition-outline' as const, bg: '#E8F5EE', color: '#1B7A4E' },
-  { id: 'Vegetables', label: 'Veggies', icon: 'leaf-outline' as const, bg: '#FFF7ED', color: '#EA580C' },
-  { id: 'Dairy', label: 'Dairy', icon: 'water-outline' as const, bg: '#E0F2FE', color: '#0369A1' },
-  { id: 'Staples', label: 'Staples', icon: 'restaurant-outline' as const, bg: '#F3E8FF', color: '#7C3AED' },
-];
-
 export function HomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<UserStackParamList>>();
   const { colors } = useTheme();
+  const { t } = useLanguage();
+
+  const POPULAR_CATEGORIES = [
+    { id: 'Fruits', label: t('categories.fruits'), icon: 'nutrition-outline' as const, bg: '#E8F5EE', color: '#1B7A4E' },
+    { id: 'Vegetables', label: t('categories.veggies'), icon: 'leaf-outline' as const, bg: '#FFF7ED', color: '#EA580C' },
+    { id: 'Dairy', label: t('categories.dairy'), icon: 'water-outline' as const, bg: '#E0F2FE', color: '#0369A1' },
+    { id: 'Staples', label: t('categories.staples'), icon: 'restaurant-outline' as const, bg: '#F3E8FF', color: '#7C3AED' },
+  ];
   const user = useAuthStore((s) => s.user);
   const { data: stores, isLoading, isError, refetch } = useNearbyStores();
   const { addToCart, getItemCount, getTotal } = useCart();
@@ -55,8 +59,8 @@ export function HomeScreen() {
         <Pressable style={styles.locationBlock}>
           <Ionicons name="location" size={18} color={colors.primary} />
           <View>
-            <Text style={[styles.locationLabel, { color: colors.text }]}>Home</Text>
-            <Text style={[styles.locationSub, { color: colors.textSecondary }]}>123 Street</Text>
+            <Text style={[styles.locationLabel, { color: colors.text }]}>{t('home.locationLabel')}</Text>
+            <Text style={[styles.locationSub, { color: colors.textSecondary }]}>{t('home.locationSub')}</Text>
           </View>
           <Ionicons name="chevron-down" size={14} color={colors.text} />
         </Pressable>
@@ -70,42 +74,40 @@ export function HomeScreen() {
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-        <Pressable
-          style={[styles.searchBar, { borderColor: colors.border, backgroundColor: colors.surface }]}
-          onPress={() => navigation.navigate('MainTabs', { screen: 'Search' })}
-        >
-          <Ionicons name="search" size={20} color={colors.textMuted} />
-          <Text style={[styles.searchPlaceholder, { color: colors.textMuted }]}>
-            Search for groceries, shops...
-          </Text>
-          <Pressable
-            onPress={(e) => {
-              e.stopPropagation?.();
-              navigation.navigate('ProductScanner');
-            }}
-            hitSlop={8}
-          >
-            <Ionicons name="barcode-outline" size={24} color={colors.text} />
-          </Pressable>
-        </Pressable>
+        <View style={styles.searchSection}>
+          <SearchBar
+            readonly
+            placeholder={t('search.homePlaceholder')}
+            onPress={() => navigation.navigate('MainTabs', { screen: 'Search' })}
+            rightElement={
+              <Pressable
+                onPress={() => navigation.navigate('ProductScanner')}
+                hitSlop={8}
+                style={[styles.scanBtn, { backgroundColor: colors.backgroundSecondary }]}
+              >
+                <Ionicons name="barcode-outline" size={22} color={colors.text} />
+              </Pressable>
+            }
+          />
+        </View>
 
         <View style={[styles.promoBanner, Shadows.card]}>
           <View style={styles.promoLeft}>
-            <Text style={styles.promoTitle}>50% Off{'\n'}First Order</Text>
+            <Text style={styles.promoTitle}>{t('home.promoTitle')}</Text>
             <Pressable style={styles.claimBtn}>
-              <Text style={styles.claimText}>Claim Now</Text>
+              <Text style={styles.claimText}>{t('home.claimNow')}</Text>
             </Pressable>
           </View>
           <Image
             source={{
-              uri: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&h=300&fit=crop',
+              uri: MOCK_UNSPLASH.produce,
             }}
             style={styles.promoImage}
           />
         </View>
 
         <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Nearby Shops</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('home.nearbyShops')}</Text>
           <Pressable>
             <Text style={{ color: colors.primary, fontWeight: '600' }}>See All</Text>
           </Pressable>
@@ -137,7 +139,7 @@ export function HomeScreen() {
         )}
 
         <Text style={[styles.sectionTitle, styles.sectionPad, { color: colors.text }]}>
-          Popular Categories
+          {t('home.popularCategories')}
         </Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.catScroll}>
           {POPULAR_CATEGORIES.map((cat) => (
@@ -155,9 +157,9 @@ export function HomeScreen() {
         </ScrollView>
 
         <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Daily Essentials</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('home.dailyEssentials')}</Text>
           <Pressable onPress={() => navigation.navigate('CategoryBrowse', { category: 'Staples' })}>
-            <Text style={{ color: colors.primary, fontWeight: '600' }}>View More</Text>
+            <Text style={{ color: colors.primary, fontWeight: '600' }}>{t('home.viewMore')}</Text>
           </Pressable>
         </View>
         <View style={styles.essentialsGrid}>
@@ -200,18 +202,17 @@ const styles = StyleSheet.create({
   brandCenter: { fontSize: 18, fontWeight: '700', flex: 1, textAlign: 'center' },
   avatar: { width: 36, height: 36, borderRadius: 18 },
   scroll: { paddingBottom: Spacing.lg },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  searchSection: {
     marginHorizontal: Spacing.lg,
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
-    gap: Spacing.sm,
     marginBottom: Spacing.lg,
   },
-  searchPlaceholder: { flex: 1, fontSize: 14 },
+  scanBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   promoBanner: {
     flexDirection: 'row',
     marginHorizontal: Spacing.lg,
@@ -269,5 +270,5 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.lg,
   },
-  cartWrap: { position: 'absolute', bottom: 88, left: 0, right: 0 },
+  cartWrap: { position: 'absolute', bottom: 130, left: 0, right: 0 },
 });

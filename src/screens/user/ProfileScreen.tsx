@@ -6,22 +6,24 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BorderRadius, Shadows, Spacing } from '../../constants/theme';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuthStore } from '../../store/authStore';
 import { AppHeader } from '../../components/layout/AppHeader';
 import { ProfileMenuCard } from '../../components/profile/ProfileMenuCard';
+import { SettingsToggleRow } from '../../components/profile/SettingsToggleRow';
+import { LanguageSelector } from '../../components/profile/LanguageSelector';
 import type { UserStackParamList } from '../../types/navigation';
-
-const SETTINGS_ITEMS = [
-  { icon: 'notifications-outline' as const, label: 'Notifications', badge: 2 },
-  { icon: 'help-circle-outline' as const, label: 'Help & Support' },
-  { icon: 'settings-outline' as const, label: 'Settings' },
-];
 
 export function ProfileScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<UserStackParamList>>();
-  const { colors } = useTheme();
+  const { colors, isDark, setMode } = useTheme();
+  const { locale, setLocale, t } = useLanguage();
   const { user, logout } = useAuthStore();
   const avatar = user?.avatarUrl ?? 'https://i.pravatar.cc/150?u=alexrivers';
+
+  const handleDarkMode = (enabled: boolean) => {
+    void setMode(enabled ? 'dark' : 'light');
+  };
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.backgroundSecondary }]} edges={['top']}>
@@ -30,7 +32,7 @@ export function ProfileScreen() {
         <View style={styles.profileSection}>
           <View style={styles.avatarWrap}>
             <Image source={{ uri: avatar }} style={styles.avatar} />
-            <Pressable style={[styles.editBtn, { backgroundColor: colors.primary }]}>
+            <Pressable style={[styles.editBtn, { backgroundColor: colors.primary, borderColor: colors.surface }]}>
               <Ionicons name="pencil" size={14} color="#FFF" />
             </Pressable>
           </View>
@@ -40,7 +42,9 @@ export function ProfileScreen() {
           </Text>
           <View style={[styles.memberBadge, { backgroundColor: colors.goldMember }]}>
             <Ionicons name="star" size={14} color={colors.goldMemberText} />
-            <Text style={[styles.memberText, { color: colors.goldMemberText }]}>Gold Member</Text>
+            <Text style={[styles.memberText, { color: colors.goldMemberText }]}>
+              {t('profile.goldMember')}
+            </Text>
           </View>
         </View>
 
@@ -48,54 +52,59 @@ export function ProfileScreen() {
           icon="bag-handle-outline"
           iconBg={colors.iconBgGreen}
           iconColor={colors.primary}
-          title="My Orders"
-          subtitle="Track, view or reorder items"
+          title={t('profile.myOrders')}
+          subtitle={t('profile.myOrdersSub')}
           onPress={() => navigation.navigate('MainTabs', { screen: 'Orders' })}
         />
         <ProfileMenuCard
           icon="location"
           iconBg={colors.iconBgOrange}
           iconColor={colors.accentDark}
-          title="Saved Addresses"
-          subtitle="Home, Work and other spots"
+          title={t('profile.savedAddresses')}
+          subtitle={t('profile.savedAddressesSub')}
           onPress={() => navigation.navigate('AddressList')}
         />
         <ProfileMenuCard
           icon="wallet-outline"
           iconBg={colors.iconBgGrey}
           iconColor={colors.textSecondary}
-          title="Payment Methods"
-          subtitle="Manage your cards and wallet"
+          title={t('profile.paymentMethods')}
+          subtitle={t('profile.paymentMethodsSub')}
         />
 
-        <View style={[styles.settingsGroup, { backgroundColor: colors.settingsGroup }]}>
-          {SETTINGS_ITEMS.map((item, index) => (
-            <Pressable
-              key={item.label}
-              style={[
-                styles.settingsRow,
-                index < SETTINGS_ITEMS.length - 1 && {
-                  borderBottomWidth: StyleSheet.hairlineWidth,
-                  borderBottomColor: colors.border,
-                },
-              ]}
-              onPress={() => {
-                if (item.label === 'Notifications') {
-                  navigation.navigate('Notifications');
-                }
-              }}
-            >
-              <Ionicons name={item.icon} size={22} color={colors.textSecondary} />
-              <Text style={[styles.settingsLabel, { color: colors.text }]}>{item.label}</Text>
-              {item.badge ? (
-                <View style={[styles.notifBadge, { backgroundColor: colors.primary }]}>
-                  <Text style={styles.notifBadgeText}>{item.badge}</Text>
-                </View>
-              ) : (
-                <View style={{ width: 24 }} />
-              )}
-            </Pressable>
-          ))}
+        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
+          {t('profile.preferences')}
+        </Text>
+        <View style={[styles.settingsGroup, { backgroundColor: colors.surface }]}>
+          <Pressable
+            style={[styles.settingsRow, { borderBottomColor: colors.border }]}
+            onPress={() => navigation.navigate('Notifications')}
+          >
+            <Ionicons name="notifications-outline" size={22} color={colors.textSecondary} />
+            <Text style={[styles.settingsLabel, { color: colors.text }]}>{t('profile.notifications')}</Text>
+            <View style={[styles.notifBadge, { backgroundColor: colors.primary }]}>
+              <Text style={styles.notifBadgeText}>2</Text>
+            </View>
+          </Pressable>
+          <Pressable style={[styles.settingsRow, { borderBottomColor: colors.border }]}>
+            <Ionicons name="help-circle-outline" size={22} color={colors.textSecondary} />
+            <Text style={[styles.settingsLabel, { color: colors.text }]}>{t('profile.helpSupport')}</Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+          </Pressable>
+          <SettingsToggleRow
+            icon="moon-outline"
+            label={t('profile.darkMode')}
+            subtitle={t('profile.darkModeSub')}
+            value={isDark}
+            onValueChange={handleDarkMode}
+          />
+          <LanguageSelector
+            locale={locale}
+            label={t('profile.language')}
+            englishLabel={t('profile.english')}
+            hindiLabel={t('profile.hindi')}
+            onChange={(next) => void setLocale(next)}
+          />
         </View>
 
         <Pressable
@@ -103,7 +112,7 @@ export function ProfileScreen() {
           onPress={() => void logout()}
         >
           <Ionicons name="log-out-outline" size={20} color={colors.error} />
-          <Text style={[styles.logoutText, { color: colors.error }]}>Logout</Text>
+          <Text style={[styles.logoutText, { color: colors.error }]}>{t('profile.logout')}</Text>
         </Pressable>
         <View style={{ height: 100 }} />
       </ScrollView>
@@ -127,7 +136,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 3,
-    borderColor: '#FFF',
   },
   name: { fontSize: 24, fontWeight: '700' },
   email: { fontSize: 14, marginTop: 4 },
@@ -141,6 +149,14 @@ const styles = StyleSheet.create({
     marginTop: Spacing.md,
   },
   memberText: { fontSize: 13, fontWeight: '600' },
+  sectionTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    marginBottom: Spacing.sm,
+    marginLeft: Spacing.xs,
+  },
   settingsGroup: {
     borderRadius: BorderRadius.lg,
     overflow: 'hidden',
@@ -151,6 +167,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: Spacing.lg,
     gap: Spacing.md,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   settingsLabel: { flex: 1, fontSize: 15, fontWeight: '500' },
   notifBadge: {

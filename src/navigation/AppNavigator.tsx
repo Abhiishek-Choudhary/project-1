@@ -14,7 +14,7 @@ import { DeliveryNavigator } from './DeliveryNavigator';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function AppNavigator() {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const { user, isAuthenticated, isLoading, hydrate } = useAuthStore();
 
   useEffect(() => {
@@ -29,7 +29,7 @@ export function AppNavigator() {
     <NavigationContainer
       theme={{
         ...DefaultTheme,
-        dark: false,
+        dark: isDark,
         colors: {
           ...DefaultTheme.colors,
           primary: colors.primary,

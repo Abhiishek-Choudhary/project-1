@@ -1,6 +1,6 @@
 # FreshDash — Project Progress
 
-> **Last updated:** 2026-05-16 (Home, Store + Filter, Product Scanner Stitch screens)  
+> **Last updated:** 2026-05-17 (Dark mode, Hindi i18n, SearchBar polish)  
 > **Purpose:** Handoff document for backend development. The mobile app is built and running on mock data; this file describes what exists, what the API must provide, and how to integrate.
 
 ---
@@ -13,6 +13,11 @@
 |------|--------|
 | Mobile app scaffold | ✅ Complete |
 | Stitch UI — Home, Store + Filter, Product Scanner | ✅ Complete |
+| Tab bar back / forward navigation (customer) | ✅ Complete |
+| Search screen UI + shared `SearchBar` component | ✅ Complete |
+| Dark mode toggle (Profile → App Preferences) | ✅ Complete |
+| English / Hindi language toggle + i18n | ✅ Complete |
+| Mock product images (unique per product id) | ✅ Complete |
 | Stitch UI — Store, Product, Cart (earlier batch) | ✅ Complete |
 | Stitch UI — Profile, Order Tracking, Checkout (Customer) | ✅ Complete |
 | Stitch UI — Vendor Dashboard, Inventory | ✅ Complete |
@@ -538,7 +543,49 @@ Primary green: `#1B7A4E` / `#006D33` | Cart/Support orange: `#F97316` | Backgrou
 
 ---
 
-## 12. Known Gaps / Future Work
+## 12. Customer UX — Navigation & Search (2026-05-17)
+
+### Tab bar history (`←` / `→`)
+- **Location:** Row above bottom tabs on the **customer** app (`CustomTabBar`).
+- **Back:** Walks through visited screens (tabs + stack: product detail, cart, store, etc.). Falls back to React Navigation `goBack()` when history is empty.
+- **Forward:** Restores screens after going back (browser-style).
+- **Implementation:**
+  - `src/store/navigationHistoryStore.ts` — Zustand history stack + index
+  - `src/navigation/NavigationHistoryTracker.tsx` — records route changes on the user stack
+  - `src/navigation/userNavigationHistory.ts` — capture / apply serialized routes
+  - `src/navigation/UserNavigator.tsx` — mounts the tracker
+
+### Search UI
+- **Component:** `src/components/ui/SearchBar.tsx` — pill shape, green search icon, clear button, optional readonly mode (Home).
+- **Search tab:** Trending chips, category shortcuts, empty-state illustration, result count header.
+- **Home:** Tapping the search bar opens the Search tab; barcode button opens Product Scanner.
+
+### Mock images
+- `src/constants/mockImages.ts` — `mockImage(seed)` uses **picsum.photos** with one unique seed per product id (`e1`, `p1`, …).
+- Hero banners still use verified Unsplash URLs where noted in `MOCK_UNSPLASH`.
+
+### Dark mode & language (2026-05-17)
+- **Profile → App Preferences:** Dark Mode switch + English / हिंदी segmented control.
+- **Persistence:** `@freshdash/theme` (light/dark), `@freshdash/language` (`en` | `hi`).
+- **i18n:** `src/i18n/translations.ts`, `LanguageProvider`, `useLanguage().t('key')` — Home, Search, Profile, tab labels.
+- **Dark UI:** Refined `Colors.dark` (white primary text `#F9FAFB`, elevated surfaces `#1A2332`); `NavigationContainer` respects `isDark`; status bar flips light/dark.
+
+### SearchBar (Google-style)
+- No border; pill shape (`#F1F3F4` light / `#2D2D2D` dark).
+- Soft shadow; green glow on focus.
+- Web: `outlineStyle: 'none'` on `TextInput` to remove default black focus ring.
+- Trending chips: borderless pills.
+- Shared on Home (readonly) and Search tab.
+
+### Store & category screens
+- **Green Valley (s2):** Added snacks/beverages/vegetables mock products — store page no longer empty.
+- **Category match:** `matchesCategory()` maps `Dairy` → `Dairy & Eggs`, etc.
+- **Category browse:** Hero card, item count, 2-column grid with names/prices/add button.
+- **Store products:** Store banner, category pills, empty/loading states, product count line.
+
+---
+
+## 13. Known Gaps / Future Work
 
 | Item | Priority |
 |------|----------|
@@ -554,7 +601,7 @@ Primary green: `#1B7A4E` / `#006D33` | Cart/Support orange: `#F97316` | Backgrou
 
 ---
 
-## 13. Files to Share with Backend Cursor Session
+## 14. Files to Share with Backend Cursor Session
 
 Give the backend agent these paths:
 - `progress.md` (this file)
@@ -569,7 +616,7 @@ Give the backend agent these paths:
 
 ---
 
-## 14. Changelog
+## 15. Changelog
 
 | Date | Change |
 |------|--------|
@@ -578,3 +625,8 @@ Give the backend agent these paths:
 | 2026-05-16 | Built Stitch Profile, Order Tracking (#FD-8291), Checkout (INR, slots, UPI) screens |
 | 2026-05-16 | Built Vendor Dashboard + Inventory, Delivery Dashboard + Order #FD-7721; role tab navigators |
 | 2026-05-16 | Rebuilt Home (promo, shops, essentials), Store Filter btn, Product Scanner screen |
+| 2026-05-17 | Fixed web deps (`expo-asset`); unique mock images via picsum per product id |
+| 2026-05-17 | Customer tab bar back/forward history; `SearchBar` + Search screen redesign |
+| 2026-05-17 | Profile dark mode + EN/HI language; Google-style borderless SearchBar; dark theme polish |
+| 2026-05-17 | Redesigned Your Orders: OrderCard, Active/Past/All tabs, thumbnails, track & reorder |
+| 2026-05-17 | Fixed empty Green Valley store (s2 products); category fuzzy match; Store/Category UI polish |

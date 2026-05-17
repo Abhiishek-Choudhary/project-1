@@ -12,6 +12,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { MOCK_UNSPLASH } from '../../constants/mockImages';
 import { BorderRadius, Shadows, Spacing } from '../../constants/theme';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useCart } from '../../hooks/useCart';
@@ -20,8 +21,7 @@ import { MOCK_SCANNER_PRODUCT } from '../../api/mockData';
 import { formatCurrency } from '../../utils/format';
 import type { UserStackParamList } from '../../types/navigation';
 
-const CAMERA_BG =
-  'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&h=1200&fit=crop';
+const CAMERA_BG = MOCK_UNSPLASH.scanner;
 
 export function ProductScannerScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<UserStackParamList>>();

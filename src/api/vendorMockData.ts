@@ -1,6 +1,5 @@
+import { mockImage } from '../constants/mockImages';
 import type { VendorInventoryItem, VendorRecentOrder, VendorStats } from '../types';
-
-const IMG = (id: number) => `https://images.unsplash.com/photo-${id}?w=200&h=200&fit=crop`;
 
 export const MOCK_VENDOR_STATS: VendorStats = {
   todayRevenue: 2482.5,
@@ -37,9 +36,9 @@ export const MOCK_VENDOR_RECENT_ORDERS: VendorRecentOrder[] = [
 ];
 
 export const MOCK_VENDOR_INVENTORY_ALERTS = [
-  { id: 'p4', name: 'Organic Avocados', imageUrl: IMG(1523042085174), stockLeft: 5 },
-  { id: 'm1', name: 'Farm Fresh Milk', imageUrl: IMG(1563636619), stockLeft: 2 },
-  { id: 'p1', name: 'Vine Tomatoes', imageUrl: IMG(1546093743), stockLeft: 45 },
+  { id: 'p4', name: 'Organic Avocados', imageUrl: mockImage('p4', 200, 200), stockLeft: 5 },
+  { id: 'm1', name: 'Farm Fresh Milk', imageUrl: mockImage('m1', 200, 200), stockLeft: 2 },
+  { id: 'p1', name: 'Vine Tomatoes', imageUrl: mockImage('p1', 200, 200), stockLeft: 45 },
 ];
 
 export const MOCK_VENDOR_INVENTORY: VendorInventoryItem[] = [
@@ -49,7 +48,7 @@ export const MOCK_VENDOR_INVENTORY: VendorInventoryItem[] = [
     category: 'Vegetables',
     unit: '2 units',
     price: 4.5,
-    imageUrl: IMG(1523042085174),
+    imageUrl: mockImage('vi1', 200, 200),
     stockCount: 8,
     lowStockThreshold: 10,
     inStock: true,
@@ -62,7 +61,7 @@ export const MOCK_VENDOR_INVENTORY: VendorInventoryItem[] = [
     category: 'Dairy',
     unit: '1 litre',
     price: 3.99,
-    imageUrl: IMG(1563636619),
+    imageUrl: mockImage('vi2', 200, 200),
     stockCount: 0,
     lowStockThreshold: 5,
     inStock: false,
@@ -75,7 +74,7 @@ export const MOCK_VENDOR_INVENTORY: VendorInventoryItem[] = [
     category: 'Vegetables',
     unit: '5 oz',
     price: 2.99,
-    imageUrl: IMG(1576045058),
+    imageUrl: mockImage('vi3', 200, 200),
     stockCount: 24,
     lowStockThreshold: 10,
     inStock: true,

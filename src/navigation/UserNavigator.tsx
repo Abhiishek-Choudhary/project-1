@@ -11,12 +11,15 @@ import { OrderTrackingScreen } from '../screens/user/OrderTrackingScreen';
 import { NotificationsScreen } from '../screens/user/NotificationsScreen';
 import { CategoryBrowseScreen } from '../screens/user/CategoryBrowseScreen';
 import { ProductScannerScreen } from '../screens/user/ProductScannerScreen';
+import { NavigationHistoryTracker } from './NavigationHistoryTracker';
 
 const Stack = createNativeStackNavigator<UserStackParamList>();
 
 export function UserNavigator() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <>
+      <NavigationHistoryTracker />
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="MainTabs" component={UserTabNavigator} />
       <Stack.Screen name="StoreProducts" component={StoreProductsScreen} />
       <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
@@ -31,6 +34,7 @@ export function UserNavigator() {
         component={ProductScannerScreen}
         options={{ presentation: 'fullScreenModal' }}
       />
-    </Stack.Navigator>
+      </Stack.Navigator>
+    </>
   );
 }

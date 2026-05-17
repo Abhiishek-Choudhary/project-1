@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import {
   FlatList,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -11,13 +12,14 @@ import { useRoute, useNavigation, type RouteProp } from '@react-navigation/nativ
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { BorderRadius, Spacing } from '../../constants/theme';
+import { BorderRadius, Shadows, Spacing } from '../../constants/theme';
 import { useTheme } from '../../contexts/ThemeContext';
 import { AppHeader } from '../../components/layout/AppHeader';
 import { CategoryPill } from '../../components/product/CategoryPill';
 import { ProductCard } from '../../components/product/ProductCard';
 import { FloatingCartBar } from '../../components/cart/FloatingCartBar';
 import { Loader } from '../../components/ui/Loader';
+import { EmptyState } from '../../components/ui/EmptyState';
 import { useStoreProducts } from '../../hooks/useStores';
 import { useCart } from '../../hooks/useCart';
 import { useAuthStore } from '../../store/authStore';
@@ -32,47 +34,43 @@ export function StoreProductsScreen() {
   const { colors } = useTheme();
   const user = useAuthStore((s) => s.user);
   const [category, setCategory] = useState(store.categories[0] ?? 'Vegetables');
-  const { data: products, isLoading } = useStoreProducts(store.id, category);
+  const { data: products, isLoading, isError, refetch } = useStoreProducts(store.id, category);
   const { addToCart, getItemCount, getTotal } = useCart();
 
   const renderItem = useCallback(
     ({ item }: { item: Product }) => (
-      <ProductCard
-        product={item}
-        onPress={() => navigation.navigate('ProductDetail', { product: item })}
-        onAdd={() => addToCart(item)}
-      />
+      <View style={styles.gridItem}>
+        <ProductCard
+          product={item}
+          onPress={() => navigation.navigate('ProductDetail', { product: item })}
+          onAdd={() => addToCart(item)}
+        />
+      </View>
     ),
     [navigation, addToCart],
   );
 
-  return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top']}>
-      <AppHeader
-        showBack
-        showBrand
-        showSearch
-        showAvatar
-        avatarUrl={user?.avatarUrl}
-        onSearchPress={() => navigation.navigate('MainTabs', { screen: 'Search' })}
-      />
-      <View style={styles.storeHeader}>
-        <View style={styles.storeInfo}>
+  const listHeader = (
+    <>
+      <View style={[styles.storeBanner, Shadows.card, { backgroundColor: colors.surface }]}>
+        <Image source={{ uri: store.imageUrl }} style={styles.bannerImage} />
+        <View style={styles.bannerOverlay}>
           <Text style={[styles.storeName, { color: colors.text }]}>{store.name}</Text>
           <View style={styles.metaRow}>
-            <Ionicons name="location" size={14} color={colors.primary} />
+            <Ionicons name="time-outline" size={14} color={colors.primary} />
             <Text style={[styles.meta, { color: colors.textSecondary }]}>
               {formatDeliveryTime(store.deliveryTimeMin, store.deliveryTimeMax)} •{' '}
-              {store.deliveryFee === 0 ? 'Free Delivery' : `$${store.deliveryFee} Delivery`}
+              {store.deliveryFee === 0 ? 'Free delivery' : `$${store.deliveryFee} delivery`}
+            </Text>
+          </View>
+          <View style={[styles.ratingBadge, { backgroundColor: colors.ratingBg }]}>
+            <Text style={[styles.ratingText, { color: colors.ratingText }]}>
+              {formatRating(store.rating, store.reviewCount)}
             </Text>
           </View>
         </View>
-        <View style={[styles.ratingBadge, { backgroundColor: colors.ratingBg }]}>
-          <Text style={[styles.ratingText, { color: colors.ratingText }]}>
-            {formatRating(store.rating, store.reviewCount)}
-          </Text>
-        </View>
       </View>
+
       <View style={styles.categoryRow}>
         <ScrollView
           horizontal
@@ -89,74 +87,125 @@ export function StoreProductsScreen() {
             />
           ))}
         </ScrollView>
-        <Pressable style={[styles.filterBtn, { borderColor: colors.border, backgroundColor: colors.surface }]}>
+        <Pressable
+          style={[styles.filterBtn, { backgroundColor: colors.backgroundSecondary }]}
+        >
           <Ionicons name="options-outline" size={18} color={colors.text} />
-          <Text style={[styles.filterText, { color: colors.text }]}>Filter</Text>
         </Pressable>
       </View>
+
+      {!isLoading && (products?.length ?? 0) > 0 && (
+        <Text style={[styles.resultLine, { color: colors.textSecondary }]}>
+          {products?.length} items in {category}
+        </Text>
+      )}
+    </>
+  );
+
+  return (
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.backgroundSecondary }]} edges={['top']}>
+      <AppHeader
+        showBack
+        showSearch
+        showAvatar
+        avatarUrl={user?.avatarUrl}
+        onSearchPress={() => navigation.navigate('MainTabs', { screen: 'Search' })}
+      />
+
       {isLoading ? (
-        <Loader />
+        <>
+          {listHeader}
+          <Loader />
+        </>
+      ) : isError ? (
+        <>
+          {listHeader}
+          <EmptyState title="Could not load products" actionLabel="Retry" onAction={() => void refetch()} />
+        </>
       ) : (
         <FlatList
           data={products}
           keyExtractor={(item) => item.id}
           numColumns={2}
           renderItem={renderItem}
+          ListHeaderComponent={listHeader}
           contentContainerStyle={styles.list}
           columnWrapperStyle={styles.row}
           showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <EmptyState
+              title={`No ${category.toLowerCase()} right now`}
+              description="Try another category or check back later."
+              actionLabel="View all categories"
+              onAction={() => {
+                const next = store.categories.find((c) => c !== category);
+                if (next) setCategory(next);
+              }}
+            />
+          }
         />
       )}
-      <View style={styles.cartWrap}>
-        <FloatingCartBar
-          itemCount={getItemCount()}
-          total={getTotal()}
-          onPress={() => navigation.navigate('Cart')}
-        />
-      </View>
+
+      {getItemCount() > 0 && (
+        <View style={styles.cartWrap}>
+          <FloatingCartBar
+            itemCount={getItemCount()}
+            total={getTotal()}
+            onPress={() => navigation.navigate('Cart')}
+          />
+        </View>
+      )}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  storeHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.md,
+  storeBanner: {
+    marginHorizontal: Spacing.lg,
+    marginTop: Spacing.sm,
+    marginBottom: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    overflow: 'hidden',
   },
-  storeInfo: { flex: 1 },
-  storeName: { fontSize: 26, fontWeight: '700' },
-  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: Spacing.xs },
-  meta: { fontSize: 13 },
+  bannerImage: { width: '100%', height: 120 },
+  bannerOverlay: { padding: Spacing.lg },
+  storeName: { fontSize: 22, fontWeight: '700' },
+  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: Spacing.xs },
+  meta: { fontSize: 13, flex: 1 },
   ratingBadge: {
+    alignSelf: 'flex-start',
+    marginTop: Spacing.sm,
     paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: 20,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.full,
   },
-  ratingText: { fontSize: 13, fontWeight: '600' },
+  ratingText: { fontSize: 12, fontWeight: '700' },
   categoryRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingLeft: Spacing.lg,
-    paddingBottom: Spacing.md,
+    paddingBottom: Spacing.sm,
     gap: Spacing.sm,
   },
   categoryScroll: { flex: 1 },
   categories: { paddingRight: Spacing.sm },
   filterBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm + 2,
+    width: 44,
+    height: 44,
     borderRadius: BorderRadius.full,
-    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginRight: Spacing.lg,
   },
-  filterText: { fontSize: 13, fontWeight: '600' },
-  list: { paddingHorizontal: Spacing.md, paddingBottom: 100 },
-  row: { justifyContent: 'space-between' },
-  cartWrap: { position: 'absolute', bottom: 88, left: 0, right: 0 },
+  resultLine: {
+    fontSize: 13,
+    fontWeight: '600',
+    paddingHorizontal: Spacing.lg,
+    marginBottom: Spacing.sm,
+  },
+  list: { paddingHorizontal: Spacing.md, paddingBottom: 120 },
+  row: { justifyContent: 'space-between', gap: Spacing.sm },
+  gridItem: { width: '48%' },
+  cartWrap: { position: 'absolute', bottom: 24, left: 0, right: 0 },
 });

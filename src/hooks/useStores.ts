@@ -32,6 +32,14 @@ export function useRelatedProducts(id: string) {
   });
 }
 
+export function useCategoryProducts(category: string) {
+  return useQuery({
+    queryKey: ['products', 'category', category],
+    queryFn: () => storeService.getCategoryProducts(category),
+    enabled: !!category,
+  });
+}
+
 export function useProductSearch(query: string) {
   return useQuery({
     queryKey: ['products', 'search', query],

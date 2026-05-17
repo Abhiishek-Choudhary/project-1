@@ -46,7 +46,11 @@ export const ProductCard = memo(function ProductCard({
       ]}
     >
       <View style={styles.imageWrap}>
-        <Image source={{ uri: product.imageUrl }} style={styles.image} />
+        <Image
+          source={{ uri: product.imageUrl }}
+          style={styles.image}
+          resizeMode="cover"
+        />
         {product.badge && (
           <View style={styles.badgePos}>
             <Badge label={product.badge} type={product.badge} />
@@ -83,13 +87,18 @@ export const ProductCard = memo(function ProductCard({
 
 const styles = StyleSheet.create({
   card: {
-    flex: 1,
+    width: '100%',
     borderRadius: BorderRadius.lg,
-    margin: Spacing.xs,
+    marginBottom: Spacing.md,
     overflow: 'hidden',
   },
-  imageWrap: { position: 'relative' },
-  image: { width: '100%', aspectRatio: 1, borderTopLeftRadius: BorderRadius.lg, borderTopRightRadius: BorderRadius.lg },
+  imageWrap: { position: 'relative', width: '100%' },
+  image: {
+    width: '100%',
+    height: 132,
+    borderTopLeftRadius: BorderRadius.lg,
+    borderTopRightRadius: BorderRadius.lg,
+  },
   badgePos: { position: 'absolute', top: Spacing.sm, left: Spacing.sm },
   content: { padding: Spacing.md },
   name: { fontSize: 14, fontWeight: '700', lineHeight: 18 },

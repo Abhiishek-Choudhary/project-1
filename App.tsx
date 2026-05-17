@@ -5,6 +5,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { AppNavigator } from './src/navigation/AppNavigator';
+import { LanguageProvider } from './src/contexts/LanguageContext';
 import { ThemeProvider, useTheme } from './src/contexts/ThemeContext';
 import { ToastProvider } from './src/contexts/ToastContext';
 import { ModalProvider } from './src/contexts/ModalContext';
@@ -36,13 +37,15 @@ export default function App() {
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
           <ThemeProvider>
-            <ToastProvider>
-              <ModalProvider>
-                <SocketProvider>
-                  <AppContent />
-                </SocketProvider>
-              </ModalProvider>
-            </ToastProvider>
+            <LanguageProvider>
+              <ToastProvider>
+                <ModalProvider>
+                  <SocketProvider>
+                    <AppContent />
+                  </SocketProvider>
+                </ModalProvider>
+              </ToastProvider>
+            </LanguageProvider>
           </ThemeProvider>
         </QueryClientProvider>
       </SafeAreaProvider>

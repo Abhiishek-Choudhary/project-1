@@ -7,6 +7,10 @@ import { useTheme } from '../../contexts/ThemeContext';
 
 interface AppHeaderProps {
   showBack?: boolean;
+  showForward?: boolean;
+  onBackPress?: () => void;
+  onForwardPress?: () => void;
+  canGoForward?: boolean;
   title?: string;
   showBrand?: boolean;
   showSearch?: boolean;
@@ -22,6 +26,10 @@ interface AppHeaderProps {
 
 export const AppHeader = memo(function AppHeader({
   showBack = false,
+  showForward = false,
+  onBackPress,
+  onForwardPress,
+  canGoForward = false,
   title,
   showBrand = false,
   showSearch = false,
@@ -40,10 +48,32 @@ export const AppHeader = memo(function AppHeader({
   return (
     <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
       <View style={styles.left}>
-        {showBack && (
-          <Pressable onPress={() => navigation.goBack()} hitSlop={12}>
-            <Ionicons name="arrow-back" size={24} color={colors.primary} />
-          </Pressable>
+        {(showBack || showForward) && (
+          <View style={styles.navGroup}>
+            {showBack && (
+              <Pressable
+                onPress={onBackPress ?? (() => navigation.goBack())}
+                hitSlop={12}
+                style={styles.navBtn}
+              >
+                <Ionicons name="chevron-back" size={22} color={colors.primary} />
+              </Pressable>
+            )}
+            {showForward && (
+              <Pressable
+                onPress={onForwardPress}
+                disabled={!canGoForward}
+                hitSlop={12}
+                style={[styles.navBtn, !canGoForward && styles.navBtnDisabled]}
+              >
+                <Ionicons
+                  name="chevron-forward"
+                  size={22}
+                  color={canGoForward ? colors.primary : colors.tabInactive}
+                />
+              </Pressable>
+            )}
+          </View>
         )}
         {showLocation && (
           <Ionicons name="location" size={22} color={colors.primary} />
@@ -84,7 +114,15 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  left: { width: 40, alignItems: 'flex-start' },
+  left: { minWidth: 40, alignItems: 'flex-start' },
+  navGroup: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  navBtn: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navBtnDisabled: { opacity: 0.4 },
   center: { flex: 1, alignItems: 'center' },
   right: {
     width: 80,

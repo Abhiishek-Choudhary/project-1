@@ -40,7 +40,11 @@ export const HomeProductCard = memo(function HomeProductCard({
       ]}
     >
       <View style={styles.imageWrap}>
-        <Image source={{ uri: product.imageUrl }} style={styles.image} />
+        <Image
+          source={{ uri: product.imageUrl }}
+          style={styles.image}
+          resizeMode="cover"
+        />
         {product.badge && (
           <View style={styles.badgePos}>
             <Badge label={product.badge} type={product.badge} />
