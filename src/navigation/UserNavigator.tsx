@@ -10,6 +10,7 @@ import { AddressListScreen } from '../screens/user/AddressListScreen';
 import { OrderTrackingScreen } from '../screens/user/OrderTrackingScreen';
 import { NotificationsScreen } from '../screens/user/NotificationsScreen';
 import { CategoryBrowseScreen } from '../screens/user/CategoryBrowseScreen';
+import { ProductScannerScreen } from '../screens/user/ProductScannerScreen';
 
 const Stack = createNativeStackNavigator<UserStackParamList>();
 
@@ -25,6 +26,11 @@ export function UserNavigator() {
       <Stack.Screen name="OrderTracking" component={OrderTrackingScreen} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
       <Stack.Screen name="CategoryBrowse" component={CategoryBrowseScreen} />
+      <Stack.Screen
+        name="ProductScanner"
+        component={ProductScannerScreen}
+        options={{ presentation: 'fullScreenModal' }}
+      />
     </Stack.Navigator>
   );
 }

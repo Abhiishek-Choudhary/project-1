@@ -9,12 +9,14 @@ interface FloatingCartBarProps {
   itemCount: number;
   total: number;
   onPress: () => void;
+  compact?: boolean;
 }
 
 export const FloatingCartBar = memo(function FloatingCartBar({
   itemCount,
   total,
   onPress,
+  compact = false,
 }: FloatingCartBarProps) {
   const { colors } = useTheme();
 
@@ -31,9 +33,15 @@ export const FloatingCartBar = memo(function FloatingCartBar({
       ]}
     >
       <Ionicons name="cart" size={20} color="#FFF" />
-      <Text style={styles.text}>View Cart ({itemCount} items)</Text>
-      <View style={styles.divider} />
-      <Text style={styles.total}>{formatCurrency(total)}</Text>
+      <Text style={styles.text}>
+        View Cart ({itemCount}{compact ? '' : ' items'})
+      </Text>
+      {!compact && (
+        <>
+          <View style={styles.divider} />
+          <Text style={styles.total}>{formatCurrency(total)}</Text>
+        </>
+      )}
     </Pressable>
   );
 });

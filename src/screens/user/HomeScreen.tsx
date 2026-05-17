@@ -1,8 +1,8 @@
 import React, { useCallback } from 'react';
 import {
-  FlatList,
   Image,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -11,140 +11,263 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { BorderRadius, Spacing } from '../../constants/theme';
+import { BorderRadius, Shadows, Spacing } from '../../constants/theme';
 import { useTheme } from '../../contexts/ThemeContext';
+import { HomeProductCard } from '../../components/product/HomeProductCard';
+import { FloatingCartBar } from '../../components/cart/FloatingCartBar';
 import { Loader } from '../../components/ui/Loader';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { useNearbyStores } from '../../hooks/useStores';
+import { useCart } from '../../hooks/useCart';
 import { useAuthStore } from '../../store/authStore';
-import { formatDeliveryTime, formatRating } from '../../utils/format';
-import type { Store } from '../../types';
+import { MOCK_ESSENTIALS } from '../../api/mockData';
+import { formatRating } from '../../utils/format';
+import type { Store, Product } from '../../types';
 import type { UserStackParamList } from '../../types/navigation';
 
-const CATEGORIES = ['Vegetables', 'Fruits', 'Dairy', 'Snacks', 'Beverages', 'Household'];
+const POPULAR_CATEGORIES = [
+  { id: 'Fruits', label: 'Fruits', icon: 'nutrition-outline' as const, bg: '#E8F5EE', color: '#1B7A4E' },
+  { id: 'Vegetables', label: 'Veggies', icon: 'leaf-outline' as const, bg: '#FFF7ED', color: '#EA580C' },
+  { id: 'Dairy', label: 'Dairy', icon: 'water-outline' as const, bg: '#E0F2FE', color: '#0369A1' },
+  { id: 'Staples', label: 'Staples', icon: 'restaurant-outline' as const, bg: '#F3E8FF', color: '#7C3AED' },
+];
 
 export function HomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<UserStackParamList>>();
   const { colors } = useTheme();
   const user = useAuthStore((s) => s.user);
   const { data: stores, isLoading, isError, refetch } = useNearbyStores();
+  const { addToCart, getItemCount, getTotal } = useCart();
 
-  const renderStore = useCallback(
-    ({ item }: { item: Store }) => (
-      <Pressable
-        style={[styles.storeCard, { backgroundColor: colors.surface }]}
-        onPress={() => navigation.navigate('StoreProducts', { store: item })}
-      >
-        <Image source={{ uri: item.imageUrl }} style={styles.storeImage} />
-        <View style={styles.storeInfo}>
-          <Text style={[styles.storeName, { color: colors.text }]}>{item.name}</Text>
-          <Text style={[styles.storeMeta, { color: colors.textSecondary }]}>
-            {formatRating(item.rating, item.reviewCount)} • {item.distanceKm} km
-          </Text>
-          <Text style={[styles.delivery, { color: colors.primary }]}>
-            {formatDeliveryTime(item.deliveryTimeMin, item.deliveryTimeMax)} •{' '}
-            {item.deliveryFee === 0 ? 'Free Delivery' : `$${item.deliveryFee}`}
-          </Text>
-        </View>
-        <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
-      </Pressable>
-    ),
-    [colors, navigation],
+  const openStore = useCallback(
+    (store: Store) => navigation.navigate('StoreProducts', { store }),
+    [navigation],
+  );
+
+  const openProduct = useCallback(
+    (product: Product) => navigation.navigate('ProductDetail', { product }),
+    [navigation],
   );
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top']}>
-      <View style={styles.header}>
-        <View>
-          <Text style={[styles.greeting, { color: colors.textSecondary }]}>Deliver to</Text>
-          <Pressable style={styles.locationRow}>
-            <Ionicons name="location" size={16} color={colors.primary} />
-            <Text style={[styles.location, { color: colors.text }]}>Premium Urban Lofts</Text>
-            <Ionicons name="chevron-down" size={16} color={colors.text} />
-          </Pressable>
-        </View>
-        <Pressable onPress={() => navigation.navigate('Notifications')}>
-          <Ionicons name="notifications-outline" size={24} color={colors.text} />
+      <View style={styles.topHeader}>
+        <Pressable style={styles.locationBlock}>
+          <Ionicons name="location" size={18} color={colors.primary} />
+          <View>
+            <Text style={[styles.locationLabel, { color: colors.text }]}>Home</Text>
+            <Text style={[styles.locationSub, { color: colors.textSecondary }]}>123 Street</Text>
+          </View>
+          <Ionicons name="chevron-down" size={14} color={colors.text} />
+        </Pressable>
+        <Text style={[styles.brandCenter, { color: colors.primary }]}>FreshDash</Text>
+        <Pressable onPress={() => navigation.navigate('MainTabs', { screen: 'Profile' })}>
+          <Image
+            source={{ uri: user?.avatarUrl ?? 'https://i.pravatar.cc/80?u=home' }}
+            style={styles.avatar}
+          />
         </Pressable>
       </View>
-      <Text style={[styles.brand, { color: colors.primary }]}>FreshDash</Text>
-      <Text style={[styles.sectionTitle, { color: colors.text }]}>Shop by Category</Text>
-      <FlatList
-        horizontal
-        data={CATEGORIES}
-        keyExtractor={(item) => item}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.categories}
-        renderItem={({ item }) => (
+
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+        <Pressable
+          style={[styles.searchBar, { borderColor: colors.border, backgroundColor: colors.surface }]}
+          onPress={() => navigation.navigate('MainTabs', { screen: 'Search' })}
+        >
+          <Ionicons name="search" size={20} color={colors.textMuted} />
+          <Text style={[styles.searchPlaceholder, { color: colors.textMuted }]}>
+            Search for groceries, shops...
+          </Text>
           <Pressable
-            style={[styles.categoryChip, { backgroundColor: colors.primaryLight }]}
-            onPress={() => navigation.navigate('CategoryBrowse', { category: item })}
+            onPress={(e) => {
+              e.stopPropagation?.();
+              navigation.navigate('ProductScanner');
+            }}
+            hitSlop={8}
           >
-            <Text style={[styles.categoryText, { color: colors.primary }]}>{item}</Text>
+            <Ionicons name="barcode-outline" size={24} color={colors.text} />
           </Pressable>
+        </Pressable>
+
+        <View style={[styles.promoBanner, Shadows.card]}>
+          <View style={styles.promoLeft}>
+            <Text style={styles.promoTitle}>50% Off{'\n'}First Order</Text>
+            <Pressable style={styles.claimBtn}>
+              <Text style={styles.claimText}>Claim Now</Text>
+            </Pressable>
+          </View>
+          <Image
+            source={{
+              uri: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&h=300&fit=crop',
+            }}
+            style={styles.promoImage}
+          />
+        </View>
+
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Nearby Shops</Text>
+          <Pressable>
+            <Text style={{ color: colors.primary, fontWeight: '600' }}>See All</Text>
+          </Pressable>
+        </View>
+        {isLoading ? (
+          <Loader />
+        ) : isError ? (
+          <EmptyState title="Couldn't load stores" actionLabel="Retry" onAction={() => void refetch()} />
+        ) : (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.shopsScroll}>
+            {stores?.map((store) => (
+              <Pressable
+                key={store.id}
+                style={[styles.shopCard, Shadows.card, { backgroundColor: colors.surface }]}
+                onPress={() => openStore(store)}
+              >
+                <Image source={{ uri: store.imageUrl }} style={styles.shopImage} />
+                <View style={styles.shopInfo}>
+                  <Text style={[styles.shopName, { color: colors.text }]} numberOfLines={1}>
+                    {store.name}
+                  </Text>
+                  <Text style={{ color: colors.textSecondary, fontSize: 12 }}>
+                    {formatRating(store.rating, store.reviewCount)} • {store.distanceKm} km
+                  </Text>
+                </View>
+              </Pressable>
+            ))}
+          </ScrollView>
         )}
-      />
-      <Text style={[styles.sectionTitle, { color: colors.text }]}>Nearby Stores</Text>
-      {isLoading ? (
-        <Loader />
-      ) : isError ? (
-        <EmptyState
-          title="Couldn't load stores"
-          actionLabel="Retry"
-          onAction={() => void refetch()}
+
+        <Text style={[styles.sectionTitle, styles.sectionPad, { color: colors.text }]}>
+          Popular Categories
+        </Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.catScroll}>
+          {POPULAR_CATEGORIES.map((cat) => (
+            <Pressable
+              key={cat.id}
+              style={styles.catItem}
+              onPress={() => navigation.navigate('CategoryBrowse', { category: cat.id })}
+            >
+              <View style={[styles.catCircle, { backgroundColor: cat.bg }]}>
+                <Ionicons name={cat.icon} size={28} color={cat.color} />
+              </View>
+              <Text style={[styles.catLabel, { color: colors.text }]}>{cat.label}</Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Daily Essentials</Text>
+          <Pressable onPress={() => navigation.navigate('CategoryBrowse', { category: 'Staples' })}>
+            <Text style={{ color: colors.primary, fontWeight: '600' }}>View More</Text>
+          </Pressable>
+        </View>
+        <View style={styles.essentialsGrid}>
+          {MOCK_ESSENTIALS.map((product) => (
+            <HomeProductCard
+              key={product.id}
+              product={product}
+              onPress={() => openProduct(product)}
+              onAdd={() => addToCart(product)}
+            />
+          ))}
+        </View>
+        <View style={{ height: 120 }} />
+      </ScrollView>
+
+      <View style={styles.cartWrap}>
+        <FloatingCartBar
+          compact
+          itemCount={getItemCount()}
+          total={getTotal()}
+          onPress={() => navigation.navigate('Cart')}
         />
-      ) : (
-        <FlatList
-          data={stores}
-          keyExtractor={(item) => item.id}
-          renderItem={renderStore}
-          contentContainerStyle={styles.list}
-          showsVerticalScrollIndicator={false}
-        />
-      )}
+      </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  header: {
+  topHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+  },
+  locationBlock: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, flex: 1 },
+  locationLabel: { fontSize: 14, fontWeight: '700' },
+  locationSub: { fontSize: 11 },
+  brandCenter: { fontSize: 18, fontWeight: '700', flex: 1, textAlign: 'center' },
+  avatar: { width: 36, height: 36, borderRadius: 18 },
+  scroll: { paddingBottom: Spacing.lg },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: Spacing.lg,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    gap: Spacing.sm,
+    marginBottom: Spacing.lg,
+  },
+  searchPlaceholder: { flex: 1, fontSize: 14 },
+  promoBanner: {
+    flexDirection: 'row',
+    marginHorizontal: Spacing.lg,
+    borderRadius: BorderRadius.xl,
+    overflow: 'hidden',
+    backgroundColor: '#FF8A33',
+    marginBottom: Spacing.xl,
+    minHeight: 140,
+  },
+  promoLeft: { flex: 1, padding: Spacing.lg, justifyContent: 'center' },
+  promoTitle: { fontSize: 22, fontWeight: '800', color: '#3D2314', lineHeight: 28 },
+  claimBtn: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#5D3A1A',
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.full,
+    marginTop: Spacing.md,
+  },
+  claimText: { color: '#FFF', fontWeight: '700', fontSize: 13 },
+  promoImage: { width: 130, height: '100%' },
+  sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.md,
-  },
-  greeting: { fontSize: 12 },
-  locationRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
-  location: { fontSize: 15, fontWeight: '700' },
-  brand: { fontSize: 28, fontWeight: '700', paddingHorizontal: Spacing.lg, marginTop: Spacing.lg },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    paddingHorizontal: Spacing.lg,
-    marginTop: Spacing.xl,
     marginBottom: Spacing.md,
   },
-  categories: { paddingHorizontal: Spacing.lg, gap: Spacing.sm },
-  categoryChip: {
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.full,
-    marginRight: Spacing.sm,
-  },
-  categoryText: { fontSize: 13, fontWeight: '600' },
-  list: { paddingHorizontal: Spacing.lg, paddingBottom: 100 },
-  storeCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: Spacing.md,
+  sectionTitle: { fontSize: 18, fontWeight: '700' },
+  sectionPad: { paddingHorizontal: Spacing.lg, marginTop: Spacing.lg, marginBottom: Spacing.md },
+  shopsScroll: { paddingLeft: Spacing.lg, marginBottom: Spacing.md },
+  shopCard: {
+    width: 200,
     borderRadius: BorderRadius.lg,
-    marginBottom: Spacing.md,
+    marginRight: Spacing.md,
+    overflow: 'hidden',
   },
-  storeImage: { width: 64, height: 64, borderRadius: BorderRadius.md },
-  storeInfo: { flex: 1, marginLeft: Spacing.md },
-  storeName: { fontSize: 16, fontWeight: '700' },
-  storeMeta: { fontSize: 12, marginTop: 2 },
-  delivery: { fontSize: 12, fontWeight: '600', marginTop: 4 },
+  shopImage: { width: '100%', height: 110 },
+  shopInfo: { padding: Spacing.md },
+  shopName: { fontSize: 15, fontWeight: '700', marginBottom: 4 },
+  catScroll: { paddingHorizontal: Spacing.lg, gap: Spacing.lg, paddingBottom: Spacing.md },
+  catItem: { alignItems: 'center', marginRight: Spacing.xl },
+  catCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.sm,
+  },
+  catLabel: { fontSize: 13, fontWeight: '500' },
+  essentialsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.lg,
+  },
+  cartWrap: { position: 'absolute', bottom: 88, left: 0, right: 0 },
 });

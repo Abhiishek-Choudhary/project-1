@@ -37,6 +37,7 @@ export interface Product {
   id: string;
   storeId: string;
   name: string;
+  brand?: string;
   description: string;
   imageUrl: string;
   price: number;

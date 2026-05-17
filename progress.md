@@ -1,6 +1,6 @@
 # FreshDash — Project Progress
 
-> **Last updated:** 2026-05-16 (Vendor + Delivery Partner Stitch screens)  
+> **Last updated:** 2026-05-16 (Home, Store + Filter, Product Scanner Stitch screens)  
 > **Purpose:** Handoff document for backend development. The mobile app is built and running on mock data; this file describes what exists, what the API must provide, and how to integrate.
 
 ---
@@ -12,7 +12,8 @@
 | Item | Status |
 |------|--------|
 | Mobile app scaffold | ✅ Complete |
-| Stitch UI — Store, Product, Cart | ✅ Complete |
+| Stitch UI — Home, Store + Filter, Product Scanner | ✅ Complete |
+| Stitch UI — Store, Product, Cart (earlier batch) | ✅ Complete |
 | Stitch UI — Profile, Order Tracking, Checkout (Customer) | ✅ Complete |
 | Stitch UI — Vendor Dashboard, Inventory | ✅ Complete |
 | Stitch UI — Delivery Dashboard, Order Detail (#FD-7721) | ✅ Complete |
@@ -156,9 +157,10 @@ Role is chosen at **signup** and returned in `AuthResponse.user.role`.
 ### 6.2 Customer (User)
 | Screen | Description |
 |--------|-------------|
-| Home | Nearby stores, category chips, notifications entry |
+| Home | **Stitch UI:** location header, search + barcode, promo banner, nearby shops, categories, daily essentials, compact cart bar |
 | Search | Product search (`q` query param) |
-| Store Products | Stitch grid: categories, product cards, floating cart bar |
+| Store Products | Stitch grid: categories + **Filter** button, product cards, floating cart bar |
+| Product Scanner | **Stitch UI:** camera overlay, scan frame, product detect card, Add to Cart |
 | Product Detail | Hero image, nutrition, related products, add to cart |
 | Cart | Address, items, coupon, order summary, checkout CTA |
 | Checkout | **Stitch UI:** address card + map preview, delivery slot grid (Express), UPI/Cards/COD payment, INR order summary, FRESH50 coupon, sticky Place Order |
@@ -248,6 +250,7 @@ Role is chosen at **signup** and returned in `AuthResponse.user.role`.
 | GET | `/stores/:id/products` | `category?` | `Product[]` |
 | GET | `/products/:id` | — | `Product` |
 | GET | `/products/search` | `q` | `Product[]` |
+| GET | `/products/scan` | `barcode` or image upload | `Product` (for scanner) |
 | GET | `/products/:id/related` | — | `Product[]` |
 
 ```typescript
@@ -520,6 +523,8 @@ All screens below are implemented. File paths point to the React Native screen c
 | 8 | **Vendor Inventory** | `VendorInventoryScreen` | Search, filters, stock toggles, Add Product FAB |
 | 9 | **Delivery Dashboard** | `DeliveryDashboardScreen` | Online toggle, active delivery, hotspots |
 | 10 | **Delivery Order Detail** | `DeliveryOrderDetailScreen` | Map, route, items, Confirm Pick Up (#FD-7721) |
+| 11 | **Home** | `HomeScreen` | Promo banner, shop carousel, essentials grid, barcode → scanner |
+| 12 | **Product Scanner** | `ProductScannerScreen` | Camera UI, scan animation, detected product card |
 
 Design tokens: `src/constants/theme.ts`  
 Primary green: `#1B7A4E` / `#006D33` | Cart/Support orange: `#F97316` | Background: `#F8F9FB`
@@ -527,7 +532,7 @@ Primary green: `#1B7A4E` / `#006D33` | Cart/Support orange: `#F97316` | Backgrou
 ### Demo navigation
 | Role | How to access |
 |------|----------------|
-| Customer | Sign up as **Customer** → Profile / Cart / Orders tabs |
+| Customer | Sign up as **Customer** → Home tab; barcode icon → Product Scanner |
 | Vendor | Sign up as **Vendor** → Dashboard tab (default) |
 | Delivery | Sign up as **Delivery Partner** → Dashboard → Order Details |
 
@@ -572,3 +577,4 @@ Give the backend agent these paths:
 | 2026-05-16 | Upgraded to Expo SDK 53, Node 24, added `progress.md`, verified `tsc` + `expo start` |
 | 2026-05-16 | Built Stitch Profile, Order Tracking (#FD-8291), Checkout (INR, slots, UPI) screens |
 | 2026-05-16 | Built Vendor Dashboard + Inventory, Delivery Dashboard + Order #FD-7721; role tab navigators |
+| 2026-05-16 | Rebuilt Home (promo, shops, essentials), Store Filter btn, Product Scanner screen |

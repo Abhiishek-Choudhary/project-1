@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import {
   FlatList,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -10,7 +11,7 @@ import { useRoute, useNavigation, type RouteProp } from '@react-navigation/nativ
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Spacing } from '../../constants/theme';
+import { BorderRadius, Spacing } from '../../constants/theme';
 import { useTheme } from '../../contexts/ThemeContext';
 import { AppHeader } from '../../components/layout/AppHeader';
 import { CategoryPill } from '../../components/product/CategoryPill';
@@ -72,20 +73,27 @@ export function StoreProductsScreen() {
           </Text>
         </View>
       </View>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.categories}
-      >
-        {store.categories.map((cat) => (
-          <CategoryPill
-            key={cat}
-            label={cat}
-            active={category === cat}
-            onPress={() => setCategory(cat)}
-          />
-        ))}
-      </ScrollView>
+      <View style={styles.categoryRow}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categories}
+          style={styles.categoryScroll}
+        >
+          {store.categories.map((cat) => (
+            <CategoryPill
+              key={cat}
+              label={cat}
+              active={category === cat}
+              onPress={() => setCategory(cat)}
+            />
+          ))}
+        </ScrollView>
+        <Pressable style={[styles.filterBtn, { borderColor: colors.border, backgroundColor: colors.surface }]}>
+          <Ionicons name="options-outline" size={18} color={colors.text} />
+          <Text style={[styles.filterText, { color: colors.text }]}>Filter</Text>
+        </Pressable>
+      </View>
       {isLoading ? (
         <Loader />
       ) : (
@@ -128,7 +136,26 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   ratingText: { fontSize: 13, fontWeight: '600' },
-  categories: { paddingHorizontal: Spacing.lg, paddingBottom: Spacing.md },
+  categoryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingLeft: Spacing.lg,
+    paddingBottom: Spacing.md,
+    gap: Spacing.sm,
+  },
+  categoryScroll: { flex: 1 },
+  categories: { paddingRight: Spacing.sm },
+  filterBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm + 2,
+    borderRadius: BorderRadius.full,
+    borderWidth: 1,
+    marginRight: Spacing.lg,
+  },
+  filterText: { fontSize: 13, fontWeight: '600' },
   list: { paddingHorizontal: Spacing.md, paddingBottom: 100 },
   row: { justifyContent: 'space-between' },
   cartWrap: { position: 'absolute', bottom: 88, left: 0, right: 0 },

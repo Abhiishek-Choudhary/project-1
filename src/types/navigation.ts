@@ -26,6 +26,7 @@ export type UserStackParamList = {
   OrderTracking: { orderId: string };
   Notifications: undefined;
   CategoryBrowse: { category: string };
+  ProductScanner: undefined;
 };
 
 export type VendorTabParamList = {
