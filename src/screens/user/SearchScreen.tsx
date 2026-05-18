@@ -11,7 +11,9 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ScreenContainer } from '../../components/layout/ScreenContainer';
 import { BorderRadius, Spacing, Typography } from '../../constants/theme';
+import { useResponsiveLayout } from '../../hooks/useResponsiveLayout';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { SearchBar } from '../../components/ui/SearchBar';
@@ -27,6 +29,7 @@ export function SearchScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<UserStackParamList>>();
   const { colors } = useTheme();
   const { t } = useLanguage();
+  const layout = useResponsiveLayout();
 
   const CATEGORIES = [
     { id: 'Fruits', label: t('categories.fruits'), icon: 'nutrition-outline' as const },
@@ -42,8 +45,16 @@ export function SearchScreen() {
 
   const showResults = query.trim().length >= 2;
 
+  const categoryCardWidth =
+    layout.productColumns >= 4
+      ? Math.floor((layout.innerWidth - layout.gap * 3) / 4)
+      : layout.productColumns === 3
+        ? Math.floor((layout.innerWidth - layout.gap * 2) / 3)
+        : undefined;
+
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top']}>
+      <ScreenContainer padded>
       <View style={styles.header}>
         <Text style={[styles.title, { color: colors.text }]}>{t('search.title')}</Text>
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
@@ -51,7 +62,7 @@ export function SearchScreen() {
         </Text>
       </View>
 
-      <View style={styles.searchSection}>
+      <View style={[styles.searchSection, { paddingHorizontal: 0 }]}>
         <SearchBar
           value={query}
           onChangeText={setQuery}
@@ -82,12 +93,16 @@ export function SearchScreen() {
           </View>
 
           <Text style={[styles.sectionLabel, { color: colors.text }]}>{t('search.shopByCategory')}</Text>
-          <View style={styles.categoryGrid}>
+          <View style={[styles.categoryGrid, { gap: layout.gap }]}>
             {CATEGORIES.map((cat) => (
               <Pressable
                 key={cat.id}
                 onPress={() => navigation.navigate('CategoryBrowse', { category: cat.id })}
-                style={[styles.categoryCard, { backgroundColor: colors.surface }]}
+                style={[
+                  styles.categoryCard,
+                  { backgroundColor: colors.surface },
+                  categoryCardWidth != null ? { width: categoryCardWidth } : { width: '47%' },
+                ]}
               >
                 <View style={[styles.categoryIcon, { backgroundColor: colors.primaryLight }]}>
                   <Ionicons name={cat.icon} size={22} color={colors.primary} />
@@ -112,9 +127,10 @@ export function SearchScreen() {
       ) : (
         <FlatList
           data={results}
+          key={`cols-${layout.productColumns}`}
           keyExtractor={(item) => item.id}
-          numColumns={2}
-          columnWrapperStyle={styles.row}
+          numColumns={layout.productColumns}
+          columnWrapperStyle={layout.productColumns > 1 ? styles.row : undefined}
           contentContainerStyle={styles.list}
           keyboardShouldPersistTaps="handled"
           ListHeaderComponent={
@@ -140,6 +156,7 @@ export function SearchScreen() {
           }
         />
       )}
+      </ScreenContainer>
     </SafeAreaView>
   );
 }
@@ -147,18 +164,15 @@ export function SearchScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   header: {
-    paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.md,
     paddingBottom: Spacing.sm,
   },
   title: { ...Typography.h1, fontSize: 28 },
   subtitle: { fontSize: 14, marginTop: 4 },
   searchSection: {
-    paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.md,
   },
   discovery: {
-    paddingHorizontal: Spacing.lg,
     paddingBottom: 120,
   },
   sectionLabel: {

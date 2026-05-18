@@ -15,6 +15,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BorderRadius, Shadows, Spacing } from '../../constants/theme';
 import { useTheme } from '../../contexts/ThemeContext';
 import { AppHeader } from '../../components/layout/AppHeader';
+import { ScreenContainer } from '../../components/layout/ScreenContainer';
+import { useResponsiveLayout } from '../../hooks/useResponsiveLayout';
 import { CategoryPill } from '../../components/product/CategoryPill';
 import { ProductCard } from '../../components/product/ProductCard';
 import { FloatingCartBar } from '../../components/cart/FloatingCartBar';
@@ -32,6 +34,7 @@ export function StoreProductsScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<UserStackParamList>>();
   const { store } = route.params;
   const { colors } = useTheme();
+  const layout = useResponsiveLayout();
   const user = useAuthStore((s) => s.user);
   const [category, setCategory] = useState(store.categories[0] ?? 'Vegetables');
   const { data: products, isLoading, isError, refetch } = useStoreProducts(store.id, category);
@@ -39,7 +42,7 @@ export function StoreProductsScreen() {
 
   const renderItem = useCallback(
     ({ item }: { item: Product }) => (
-      <View style={styles.gridItem}>
+      <View style={[styles.gridItem, { width: layout.productCardWidth }]}>
         <ProductCard
           product={item}
           onPress={() => navigation.navigate('ProductDetail', { product: item })}
@@ -47,12 +50,18 @@ export function StoreProductsScreen() {
         />
       </View>
     ),
-    [navigation, addToCart],
+    [navigation, addToCart, layout.productCardWidth],
   );
 
   const listHeader = (
     <>
-      <View style={[styles.storeBanner, Shadows.card, { backgroundColor: colors.surface }]}>
+      <View
+        style={[
+          styles.storeBanner,
+          Shadows.card,
+          { backgroundColor: colors.surface, marginHorizontal: layout.gutter },
+        ]}
+      >
         <Image source={{ uri: store.imageUrl }} style={styles.bannerImage} />
         <View style={styles.bannerOverlay}>
           <Text style={[styles.storeName, { color: colors.text }]}>{store.name}</Text>
@@ -71,7 +80,7 @@ export function StoreProductsScreen() {
         </View>
       </View>
 
-      <View style={styles.categoryRow}>
+      <View style={[styles.categoryRow, { paddingLeft: layout.gutter }]}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -95,7 +104,7 @@ export function StoreProductsScreen() {
       </View>
 
       {!isLoading && (products?.length ?? 0) > 0 && (
-        <Text style={[styles.resultLine, { color: colors.textSecondary }]}>
+        <Text style={[styles.resultLine, { color: colors.textSecondary, paddingHorizontal: layout.gutter }]}>
           {products?.length} items in {category}
         </Text>
       )}
@@ -104,6 +113,7 @@ export function StoreProductsScreen() {
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.backgroundSecondary }]} edges={['top']}>
+      <ScreenContainer style={styles.screen}>
       <AppHeader
         showBack
         showSearch
@@ -125,12 +135,13 @@ export function StoreProductsScreen() {
       ) : (
         <FlatList
           data={products}
+          key={`store-${layout.productColumns}`}
           keyExtractor={(item) => item.id}
-          numColumns={2}
+          numColumns={layout.productColumns}
           renderItem={renderItem}
           ListHeaderComponent={listHeader}
-          contentContainerStyle={styles.list}
-          columnWrapperStyle={styles.row}
+          contentContainerStyle={[styles.list, { paddingHorizontal: layout.gutter }]}
+          columnWrapperStyle={layout.productColumns > 1 ? [styles.row, { gap: layout.gap }] : undefined}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <EmptyState
@@ -147,22 +158,24 @@ export function StoreProductsScreen() {
       )}
 
       {getItemCount() > 0 && (
-        <View style={styles.cartWrap}>
+        <View style={[styles.cartWrap, layout.isWeb && styles.cartWrapWeb, { paddingHorizontal: layout.gutter }]}>
           <FloatingCartBar
             itemCount={getItemCount()}
             total={getTotal()}
             onPress={() => navigation.navigate('Cart')}
+            style={layout.isWeb ? styles.cartBarWeb : undefined}
           />
         </View>
       )}
+      </ScreenContainer>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
+  screen: { flex: 1 },
   storeBanner: {
-    marginHorizontal: Spacing.lg,
     marginTop: Spacing.sm,
     marginBottom: Spacing.md,
     borderRadius: BorderRadius.lg,
@@ -184,7 +197,6 @@ const styles = StyleSheet.create({
   categoryRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingLeft: Spacing.lg,
     paddingBottom: Spacing.sm,
     gap: Spacing.sm,
   },
@@ -201,11 +213,12 @@ const styles = StyleSheet.create({
   resultLine: {
     fontSize: 13,
     fontWeight: '600',
-    paddingHorizontal: Spacing.lg,
     marginBottom: Spacing.sm,
   },
-  list: { paddingHorizontal: Spacing.md, paddingBottom: 120 },
-  row: { justifyContent: 'space-between', gap: Spacing.sm },
-  gridItem: { width: '48%' },
+  list: { paddingBottom: 120 },
+  row: { justifyContent: 'flex-start' },
+  gridItem: {},
   cartWrap: { position: 'absolute', bottom: 24, left: 0, right: 0 },
+  cartWrapWeb: { alignItems: 'center' },
+  cartBarWeb: { marginHorizontal: 0, maxWidth: 420, width: '100%' },
 });

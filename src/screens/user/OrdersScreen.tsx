@@ -3,6 +3,7 @@ import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ScreenContainer } from '../../components/layout/ScreenContainer';
 import { OrderStatus } from '../../constants/enums';
 import { BorderRadius, Spacing, Typography } from '../../constants/theme';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -81,6 +82,7 @@ export function OrdersScreen() {
       style={[styles.safe, { backgroundColor: colors.backgroundSecondary }]}
       edges={['top']}
     >
+      <ScreenContainer padded>
       <View style={styles.header}>
         <Text style={[styles.title, { color: colors.text }]}>{t('orders.title')}</Text>
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
@@ -143,6 +145,7 @@ export function OrdersScreen() {
           showsVerticalScrollIndicator={false}
         />
       )}
+      </ScreenContainer>
     </SafeAreaView>
   );
 }

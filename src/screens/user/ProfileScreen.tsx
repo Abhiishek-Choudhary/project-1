@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BorderRadius, Shadows, Spacing } from '../../constants/theme';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useNotificationCenter } from '../../contexts/NotificationContext';
 import { useAuthStore } from '../../store/authStore';
 import { AppHeader } from '../../components/layout/AppHeader';
 import { ProfileMenuCard } from '../../components/profile/ProfileMenuCard';
@@ -18,6 +19,7 @@ export function ProfileScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<UserStackParamList>>();
   const { colors, isDark, setMode } = useTheme();
   const { locale, setLocale, t } = useLanguage();
+  const { unreadCount } = useNotificationCenter();
   const { user, logout } = useAuthStore();
   const avatar = user?.avatarUrl ?? 'https://i.pravatar.cc/150?u=alexrivers';
 
@@ -82,9 +84,15 @@ export function ProfileScreen() {
           >
             <Ionicons name="notifications-outline" size={22} color={colors.textSecondary} />
             <Text style={[styles.settingsLabel, { color: colors.text }]}>{t('profile.notifications')}</Text>
-            <View style={[styles.notifBadge, { backgroundColor: colors.primary }]}>
-              <Text style={styles.notifBadgeText}>2</Text>
-            </View>
+            {unreadCount > 0 ? (
+              <View style={[styles.notifBadge, { backgroundColor: colors.accent }]}>
+                <Text style={styles.notifBadgeText}>
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </Text>
+              </View>
+            ) : (
+              <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+            )}
           </Pressable>
           <Pressable style={[styles.settingsRow, { borderBottomColor: colors.border }]}>
             <Ionicons name="help-circle-outline" size={22} color={colors.textSecondary} />

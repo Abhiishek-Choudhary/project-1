@@ -420,14 +420,52 @@ export const MOCK_ORDERS: Order[] = [
   },
 ];
 
+const minutesAgo = (m: number) => new Date(Date.now() - m * 60 * 1000).toISOString();
+
 export const MOCK_NOTIFICATIONS: Notification[] = [
   {
     id: 'n1',
     type: NotificationType.Order,
     title: 'Order on the way',
-    body: 'Your order from Organic Market is out for delivery.',
+    body: 'Your order #FD-8291 from Organic Market is out for delivery.',
     read: false,
-    createdAt: new Date().toISOString(),
+    createdAt: minutesAgo(5),
+    data: { orderId: 'o1', screen: 'OrderTracking' },
+  },
+  {
+    id: 'n2',
+    type: NotificationType.Delivery,
+    title: 'Marcus is nearby',
+    body: 'Your delivery partner will arrive in about 8 minutes.',
+    read: false,
+    createdAt: minutesAgo(12),
+    data: { orderId: 'o1', screen: 'OrderTracking' },
+  },
+  {
+    id: 'n3',
+    type: NotificationType.Promo,
+    title: '50% off first order',
+    body: 'Use code FRESH50 at checkout. Valid until midnight.',
+    read: true,
+    createdAt: minutesAgo(180),
+    data: { screen: 'Home' },
+  },
+  {
+    id: 'n4',
+    type: NotificationType.Order,
+    title: 'Order delivered',
+    body: 'Your order #FD-7988 was delivered. Rate your experience!',
+    read: true,
+    createdAt: daysAgo(2),
+    data: { orderId: 'o3' },
+  },
+  {
+    id: 'n5',
+    type: NotificationType.System,
+    title: 'Welcome to FreshDash',
+    body: 'Get groceries from nearby stores in minutes.',
+    read: true,
+    createdAt: daysAgo(7),
   },
 ];
 

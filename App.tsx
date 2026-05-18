@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
+import { setupWebDocument } from './src/utils/webSetup';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -10,6 +11,7 @@ import { ThemeProvider, useTheme } from './src/contexts/ThemeContext';
 import { ToastProvider } from './src/contexts/ToastContext';
 import { ModalProvider } from './src/contexts/ModalContext';
 import { SocketProvider } from './src/contexts/SocketContext';
+import { NotificationProvider } from './src/contexts/NotificationContext';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -32,6 +34,10 @@ function AppContent() {
 }
 
 export default function App() {
+  useEffect(() => {
+    setupWebDocument();
+  }, []);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
@@ -41,7 +47,9 @@ export default function App() {
               <ToastProvider>
                 <ModalProvider>
                   <SocketProvider>
-                    <AppContent />
+                    <NotificationProvider>
+                      <AppContent />
+                    </NotificationProvider>
                   </SocketProvider>
                 </ModalProvider>
               </ToastProvider>

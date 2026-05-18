@@ -27,7 +27,8 @@
 | State management (Zustand + TanStack Query) | ✅ Complete |
 | Socket.IO client (order tracking) | ✅ Wired, needs server |
 | REST API integration | ⏳ **Backend required** |
-| Push notifications | ❌ Not started |
+| In-app notifications (center, badge, socket) | ✅ Frontend complete |
+| Push notifications (FCM / expo-notifications) | ⏳ Phase 2 |
 | Payment gateway (Razorpay/Stripe/UPI) | ⏳ UI built, gateway TBD |
 
 ---
@@ -577,6 +578,20 @@ Primary green: `#1B7A4E` / `#006D33` | Cart/Support orange: `#F97316` | Backgrou
 - Trending chips: borderless pills.
 - Shared on Home (readonly) and Search tab.
 
+### Notifications (frontend — 2026-05-17)
+- **Service:** `src/services/notificationService.ts` — `GET /notifications`, mark read, mark all (`USE_MOCK` until backend).
+- **UI:** `NotificationsScreen` — grouped New / Earlier, pull-to-refresh, tap → order tracking.
+- **Components:** `NotificationCard`, `NotificationBell` (home header + profile badge).
+- **Realtime:** `NotificationProvider` listens for Socket.IO `notification:new`; shows in-app toast.
+- **Mock:** Expanded `MOCK_NOTIFICATIONS`; demo promo pushed ~8s after connect (until backend live).
+- **Disable mocks:** add `notificationService` when backend ready (same pattern as auth/store).
+
+### Platform UI (Android / Web)
+- **`ScreenContainer`** — max width 520px on web, centered content.
+- **`cardShadow()`** — Android `elevation`, iOS shadow, web `boxShadow`.
+- **Home essentials** — fixed image height (118px), product name/price always visible.
+- **Tab bar** — centered on web to match content width.
+
 ### Store & category screens
 - **Green Valley (s2):** Added snacks/beverages/vegetables mock products — store page no longer empty.
 - **Category match:** `matchesCategory()` maps `Dairy` → `Dairy & Eggs`, etc.
@@ -629,4 +644,5 @@ Give the backend agent these paths:
 | 2026-05-17 | Customer tab bar back/forward history; `SearchBar` + Search screen redesign |
 | 2026-05-17 | Profile dark mode + EN/HI language; Google-style borderless SearchBar; dark theme polish |
 | 2026-05-17 | Redesigned Your Orders: OrderCard, Active/Past/All tabs, thumbnails, track & reorder |
+| 2026-05-17 | In-app notifications module; ScreenContainer + card shadows for web/Android polish |
 | 2026-05-17 | Fixed empty Green Valley store (s2 products); category fuzzy match; Store/Category UI polish |

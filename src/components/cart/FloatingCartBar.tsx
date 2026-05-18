@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BorderRadius, Shadows, Spacing } from '../../constants/theme';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -10,6 +10,7 @@ interface FloatingCartBarProps {
   total: number;
   onPress: () => void;
   compact?: boolean;
+  style?: StyleProp<ViewStyle>;
 }
 
 export const FloatingCartBar = memo(function FloatingCartBar({
@@ -17,6 +18,7 @@ export const FloatingCartBar = memo(function FloatingCartBar({
   total,
   onPress,
   compact = false,
+  style,
 }: FloatingCartBarProps) {
   const { colors } = useTheme();
 
@@ -30,6 +32,7 @@ export const FloatingCartBar = memo(function FloatingCartBar({
         Shadows.floating,
         { backgroundColor: colors.cartBar },
         pressed && { opacity: 0.92 },
+        style,
       ]}
     >
       <Ionicons name="cart" size={20} color="#FFF" />

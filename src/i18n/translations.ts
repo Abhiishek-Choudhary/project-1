@@ -33,6 +33,16 @@ export const translations = {
       dailyEssentials: 'Daily Essentials',
       viewMore: 'View More',
     },
+    notifications: {
+      title: 'Notifications',
+      unread: 'New',
+      earlier: 'Earlier',
+      unreadCount: '{{count}} unread',
+      allCaughtUp: "You're all caught up",
+      markAllRead: 'Mark all read',
+      emptyTitle: 'No notifications',
+      emptyBody: 'Updates about orders and offers will appear here.',
+    },
     orders: {
       title: 'Your Orders',
       subtitle: 'Track deliveries and reorder favourites',
@@ -100,6 +110,16 @@ export const translations = {
       popularCategories: 'लोकप्रिय श्रेणियाँ',
       dailyEssentials: 'दैनिक ज़रूरतें',
       viewMore: 'और देखें',
+    },
+    notifications: {
+      title: 'सूचनाएँ',
+      unread: 'नई',
+      earlier: 'पुरानी',
+      unreadCount: '{{count}} अनपढ़ी',
+      allCaughtUp: 'सब देख लिया',
+      markAllRead: 'सभी पढ़ी हुई',
+      emptyTitle: 'कोई सूचना नहीं',
+      emptyBody: 'ऑर्डर और ऑफ़र की जानकारी यहाँ दिखेगी।',
     },
     orders: {
       title: 'आपके ऑर्डर',

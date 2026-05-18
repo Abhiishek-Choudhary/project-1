@@ -8,6 +8,8 @@ import { BorderRadius, Shadows, Spacing, Typography } from '../../constants/them
 import { useTheme } from '../../contexts/ThemeContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { AppHeader } from '../../components/layout/AppHeader';
+import { ScreenContainer } from '../../components/layout/ScreenContainer';
+import { useResponsiveLayout } from '../../hooks/useResponsiveLayout';
 import { ProductCard } from '../../components/product/ProductCard';
 import { Loader } from '../../components/ui/Loader';
 import { EmptyState } from '../../components/ui/EmptyState';
@@ -31,6 +33,7 @@ export function CategoryBrowseScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<UserStackParamList>>();
   const { colors } = useTheme();
   const { t } = useLanguage();
+  const layout = useResponsiveLayout();
   const category = route.params.category;
   const { data: products, isLoading, isError, refetch } = useCategoryProducts(category);
   const { addToCart, getItemCount, getTotal } = useCart();
@@ -53,7 +56,7 @@ export function CategoryBrowseScreen() {
 
   const renderItem = useCallback(
     ({ item }: { item: Product }) => (
-      <View style={styles.gridItem}>
+      <View style={[styles.gridItem, { width: layout.productCardWidth }]}>
         <ProductCard
           product={item}
           onPress={() => navigation.navigate('ProductDetail', { product: item })}
@@ -61,14 +64,21 @@ export function CategoryBrowseScreen() {
         />
       </View>
     ),
-    [navigation, addToCart],
+    [navigation, addToCart, layout.productCardWidth],
   );
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.backgroundSecondary }]} edges={['top']}>
+      <ScreenContainer style={styles.screen}>
       <AppHeader showBack title={categoryLabel} />
 
-      <View style={[styles.hero, { backgroundColor: colors.surface }, Shadows.card]}>
+      <View
+        style={[
+          styles.hero,
+          { backgroundColor: colors.surface, marginHorizontal: layout.gutter },
+          Shadows.card,
+        ]}
+      >
         <View style={[styles.heroIcon, { backgroundColor: colors.primaryLight }]}>
           <Ionicons name={meta.icon} size={28} color={colors.primary} />
         </View>
@@ -90,11 +100,12 @@ export function CategoryBrowseScreen() {
       ) : (
         <FlatList
           data={products}
+          key={`cat-${layout.productColumns}`}
           keyExtractor={(item) => item.id}
-          numColumns={2}
+          numColumns={layout.productColumns}
           renderItem={renderItem}
-          columnWrapperStyle={styles.row}
-          contentContainerStyle={styles.list}
+          columnWrapperStyle={layout.productColumns > 1 ? [styles.row, { gap: layout.gap }] : undefined}
+          contentContainerStyle={[styles.list, { paddingHorizontal: layout.gutter }]}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <EmptyState
@@ -106,25 +117,27 @@ export function CategoryBrowseScreen() {
       )}
 
       {getItemCount() > 0 && (
-        <View style={styles.cartWrap}>
+        <View style={[styles.cartWrap, layout.isWeb && styles.cartWrapWeb, { paddingHorizontal: layout.gutter }]}>
           <FloatingCartBar
             compact
             itemCount={getItemCount()}
             total={getTotal()}
             onPress={() => navigation.navigate('Cart')}
+            style={layout.isWeb ? styles.cartBarWeb : undefined}
           />
         </View>
       )}
+      </ScreenContainer>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
+  screen: { flex: 1 },
   hero: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: Spacing.lg,
     marginTop: Spacing.sm,
     marginBottom: Spacing.md,
     padding: Spacing.lg,
@@ -142,8 +155,10 @@ const styles = StyleSheet.create({
   heroTitle: { ...Typography.h2 },
   heroSub: { fontSize: 13, marginTop: 4, lineHeight: 18 },
   heroCount: { fontSize: 13, fontWeight: '700', marginTop: Spacing.sm },
-  list: { paddingHorizontal: Spacing.md, paddingBottom: 130 },
-  row: { justifyContent: 'space-between', gap: Spacing.sm },
-  gridItem: { width: '48%' },
+  list: { paddingBottom: 130 },
+  row: { justifyContent: 'flex-start' },
+  gridItem: {},
   cartWrap: { position: 'absolute', bottom: 24, left: 0, right: 0 },
+  cartWrapWeb: { alignItems: 'center' },
+  cartBarWeb: { marginHorizontal: 0, maxWidth: 420, width: '100%' },
 });

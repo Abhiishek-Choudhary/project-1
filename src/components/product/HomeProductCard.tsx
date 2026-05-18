@@ -2,7 +2,8 @@ import React, { memo, useCallback } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ProductBadge } from '../../constants/enums';
-import { BorderRadius, Shadows, Spacing } from '../../constants/theme';
+import { BorderRadius, Spacing } from '../../constants/theme';
+import { cardShadow } from '../../utils/platformLayout';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { Product } from '../../types';
 import { formatCurrency } from '../../utils/format';
@@ -34,7 +35,7 @@ export const HomeProductCard = memo(function HomeProductCard({
       onPress={onPress}
       style={({ pressed }) => [
         styles.card,
-        Shadows.card,
+        cardShadow(3),
         { backgroundColor: colors.surface },
         pressed && { opacity: 0.95 },
       ]}
@@ -76,22 +77,22 @@ export const HomeProductCard = memo(function HomeProductCard({
 
 const styles = StyleSheet.create({
   card: {
-    width: '48%',
+    width: '100%',
     borderRadius: BorderRadius.lg,
     marginBottom: Spacing.md,
     overflow: 'hidden',
   },
-  imageWrap: { position: 'relative' },
+  imageWrap: { position: 'relative', width: '100%' },
   image: {
     width: '100%',
-    aspectRatio: 1,
+    height: 118,
     borderTopLeftRadius: BorderRadius.lg,
     borderTopRightRadius: BorderRadius.lg,
   },
   badgePos: { position: 'absolute', top: Spacing.sm, left: Spacing.sm },
   content: { padding: Spacing.md },
   brand: { fontSize: 11, marginBottom: 2 },
-  name: { fontSize: 14, fontWeight: '700', lineHeight: 18, minHeight: 36 },
+  name: { fontSize: 14, fontWeight: '700', lineHeight: 18, minHeight: 40 },
   footer: {
     flexDirection: 'row',
     alignItems: 'center',

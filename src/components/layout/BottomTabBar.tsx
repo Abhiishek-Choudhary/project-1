@@ -5,6 +5,8 @@ import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BorderRadius, Spacing } from '../../constants/theme';
+import { useResponsiveLayout } from '../../hooks/useResponsiveLayout';
+import { pageShellStyle } from '../../utils/platformLayout';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { applyNavHistoryEntry } from '../../navigation/userNavigationHistory';
@@ -33,6 +35,7 @@ export const CustomTabBar = memo(function CustomTabBar({
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
   const { t } = useLanguage();
+  const layout = useResponsiveLayout();
 
   const entries = useNavigationHistoryStore((s) => s.entries);
   const historyIndex = useNavigationHistoryStore((s) => s.index);
@@ -81,55 +84,58 @@ export const CustomTabBar = memo(function CustomTabBar({
   }, [stackNavigation, goForwardIndex, entries, setApplyingHistory]);
 
   return (
-    <View
-      style={[
-        styles.wrapper,
-        {
-          paddingBottom: insets.bottom + Spacing.sm,
-          backgroundColor: colors.surface,
-          borderTopColor: colors.border,
-        },
-      ]}
-    >
-      <View style={[styles.navRow, { borderBottomColor: colors.borderLight }]}>
-        <Pressable
-          onPress={handleBack}
-          disabled={!canGoBack}
-          style={({ pressed }) => [
-            styles.navBtn,
-            { backgroundColor: colors.backgroundSecondary },
-            !canGoBack && styles.navBtnDisabled,
-            pressed && canGoBack && { opacity: 0.75 },
-          ]}
-          accessibilityLabel="Go back"
-        >
-          <Ionicons
-            name="chevron-back"
-            size={22}
-            color={canGoBack ? colors.primary : colors.tabInactive}
-          />
-        </Pressable>
-        <Pressable
-          onPress={handleForward}
-          disabled={!canGoForward}
-          style={({ pressed }) => [
-            styles.navBtn,
-            { backgroundColor: colors.backgroundSecondary },
-            !canGoForward && styles.navBtnDisabled,
-            pressed && canGoForward && { opacity: 0.75 },
-          ]}
-          accessibilityLabel="Go forward"
-        >
-          <Ionicons
-            name="chevron-forward"
-            size={22}
-            color={canGoForward ? colors.primary : colors.tabInactive}
-          />
-        </Pressable>
-        <Text style={[styles.navHint, { color: colors.textMuted }]}>
-          {canGoForward || canGoBack ? t('nav.browseHistory') : t('nav.home')}
-        </Text>
-      </View>
+    <View style={[styles.outer, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
+      <View
+        style={[
+          styles.wrapper,
+          pageShellStyle(layout.maxContentWidth),
+          {
+            paddingBottom: insets.bottom + Spacing.sm,
+            paddingHorizontal: layout.gutter,
+          },
+        ]}
+      >
+      {layout.showBrowseNav ? (
+        <View style={[styles.navRow, { borderBottomColor: colors.borderLight }]}>
+          <Pressable
+            onPress={handleBack}
+            disabled={!canGoBack}
+            style={({ pressed }) => [
+              styles.navBtn,
+              { backgroundColor: colors.backgroundSecondary },
+              !canGoBack && styles.navBtnDisabled,
+              pressed && canGoBack && { opacity: 0.75 },
+            ]}
+            accessibilityLabel="Go back"
+          >
+            <Ionicons
+              name="chevron-back"
+              size={22}
+              color={canGoBack ? colors.primary : colors.tabInactive}
+            />
+          </Pressable>
+          <Pressable
+            onPress={handleForward}
+            disabled={!canGoForward}
+            style={({ pressed }) => [
+              styles.navBtn,
+              { backgroundColor: colors.backgroundSecondary },
+              !canGoForward && styles.navBtnDisabled,
+              pressed && canGoForward && { opacity: 0.75 },
+            ]}
+            accessibilityLabel="Go forward"
+          >
+            <Ionicons
+              name="chevron-forward"
+              size={22}
+              color={canGoForward ? colors.primary : colors.tabInactive}
+            />
+          </Pressable>
+          <Text style={[styles.navHint, { color: colors.textMuted }]}>
+            {canGoForward || canGoBack ? t('nav.browseHistory') : t('nav.home')}
+          </Text>
+        </View>
+      ) : null}
 
       <View style={styles.bar}>
         {state.routes.map((route, index) => {
@@ -179,18 +185,22 @@ export const CustomTabBar = memo(function CustomTabBar({
           );
         })}
       </View>
+      </View>
     </View>
   );
 });
 
 const styles = StyleSheet.create({
-  wrapper: {
+  outer: {
     borderTopWidth: StyleSheet.hairlineWidth,
+    alignItems: 'center',
+  },
+  wrapper: {
+    width: '100%',
   },
   navRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.sm,
     paddingBottom: Spacing.sm,
     gap: Spacing.sm,
@@ -213,7 +223,6 @@ const styles = StyleSheet.create({
   bar: {
     flexDirection: 'row',
     paddingTop: Spacing.sm,
-    paddingHorizontal: Spacing.md,
   },
   tab: { flex: 1, alignItems: 'center', gap: 4 },
   iconWrap: {
